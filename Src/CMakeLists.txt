@@ -1,0 +1,88 @@
+cmake_minimum_required(VERSION 3.22)
+message("Build Type ") # Wyświetlenie listy nazw bibliotek
+
+enable_language(C CXX ASM)
+set(CMAKE_C_STANDARD 11)
+set(CMAKE_C_STANDARD_REQUIRED ON)
+set(CMAKE_C_EXTENSIONS ON)
+
+set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+set(CMAKE_CXX_EXTENSIONS ON)
+
+set(CORE_FLAGS "-mcpu=cortex-m3 -mthumb")
+set(CORE_FLAGS "${CORE_FLAGS} -g3")
+set(CXX_FLAGS "-std=gnu++17 -O0 -g -fno-rtti -fno-exceptions -fverbose-asm -MMD")
+set(C_FLAGS "-O3 -ffunction-sections -fdata-sections -fstack-usage -MMD -MP")
+set(ASM_FLAGS "-x assembler-with-cpp")
+set(CXX_WARNINGS "-Wall -Wextra")
+set(C_WARNINGS "-Wall -Wextra")
+# set(LD_FLAGS " --specs=nosys.specs \
+# -Wl,-Map=\"${PROJECT_BINARY_DIR}/${CMAKE_PROJECT_NAME}.map\" \
+# -Wl,--gc-sections -static \
+# -L\"${CMAKE_SOURCE_DIR}/Src/CMSIS_HAL/CMSIS/Lib/GCC\" \
+# -L\"${CMAKE_BINARY_DIR}/Src/CMSIS_HAL\" \
+# -larm_cortexM3l_math -lCMSIS_HAL \
+# --specs=nano.specs -Wl,--start-group -lc -lm -Wl,--end-group -Wl,--print-memory-usage")
+set(CMAKE_LINKER "/usr/bin/arm-none-eabi-g++")
+set(CMAKE_CXX_FLAGS "${CORE_FLAGS} ${CXX_FLAGS} ${CXX_WARNINGS}")
+set(CMAKE_C_FLAGS "${CORE_FLAGS} ${C_FLAGS} ${C_WARNINGS}")
+set(CMAKE_ASM_FLAGS "${ASM_FLAGS} ${CORE_FLAGS} ${CXX_WARNINGS}")
+# Be careful to link things in proper order
+# set(CMAKE_CXX_LINK_EXECUTABLE "<CMAKE_LINKER> <OBJECTS> -o <TARGET> ${CORE_FLAGS} ${LD_FLAGS}")
+set(CMAKE_EXE_LINKER_FLAGS  "${CMAKE_EXE_LINKER_FLAGS} --specs=nosys.specs -Wl,-Map=\
+\"${PROJECT_BINARY_DIR}/${CMAKE_PROJECT_NAME}.map\" -Wl,--gc-sections -static --specs=nano.specs \
+-Wl,--start-group -lc -lm -Wl,--end-group -Wl,--print-memory-usage")
+
+set(LINKER_SCRIPT ${CMAKE_SOURCE_DIR}/Src/StartupLinkerScript/STM32F103RBTx_FLASH.ld)
+set(EXECUTABLE ${CMAKE_PROJECT_NAME})
+set(SYMBOLS
+    -DSTM32
+    -DSTM32F1
+    -DSTM32F103xB
+    -DUSE_HAL_DRIVER)
+
+set(INCLUDES       ${CMAKE_CURRENT_SOURCE_DIR}/Periph
+                   ${CMAKE_CURRENT_SOURCE_DIR}/SystemHal)
+set(PERIPH_SRCS    ${CMAKE_CURRENT_SOURCE_DIR}/Periph/gpio.c
+                   ${CMAKE_CURRENT_SOURCE_DIR}/Periph/usart.c)
+set(SYS_HAL_SRCS   ${CMAKE_CURRENT_SOURCE_DIR}/SystemHal/stm32f1xx_hal_msp.c
+                   ${CMAKE_CURRENT_SOURCE_DIR}/SystemHal/stm32f1xx_it.c
+                   ${CMAKE_CURRENT_SOURCE_DIR}/SystemHal/system_stm32f1xx.c)
+set(STARTUP_FILE   ${CMAKE_CURRENT_SOURCE_DIR}/StartupLinkerScript/startup_stm32f103xb.s)
+
+add_subdirectory(CMSIS_HAL)
+
+add_executable(${EXECUTABLE} main.cpp ${PERIPH_SRCS} ${SYS_HAL_SRCS} ${STARTUP_FILE})
+
+# Add libraries
+target_link_directories(${EXECUTABLE} PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/CMSIS_HAL/CMSIS/Lib/GCC
+                                              ${CMAKE_BINARY_DIR}/Src/CMSIS_HAL)
+target_link_libraries(${EXECUTABLE} PRIVATE -larm_cortexM3l_math CMSIS_HAL)
+
+# Include paths
+target_include_directories(${EXECUTABLE} PRIVATE ${INCLUDES})
+
+# Project symbols
+target_compile_definitions(${EXECUTABLE} PRIVATE ${SYMBOLS})
+
+# Compiler options
+target_compile_options(${EXECUTABLE} PRIVATE)
+
+# Linker options
+target_link_options(${EXECUTABLE} PRIVATE
+    -T${LINKER_SCRIPT}
+)
+
+# Execute post-build to print size
+add_custom_command(TARGET ${EXECUTABLE} POST_BUILD
+    COMMAND ${CMAKE_SIZE} $<TARGET_FILE:${EXECUTABLE}>)
+
+# Convert output to hex and binary
+add_custom_command(TARGET ${EXECUTABLE} POST_BUILD
+    COMMAND ${CMAKE_OBJCOPY} -O ihex $<TARGET_FILE:${EXECUTABLE}> ${EXECUTABLE}.hex)
+
+# Convert to bin file -> add conditional check?
+add_custom_command(TARGET ${EXECUTABLE} POST_BUILD
+    COMMAND ${CMAKE_OBJCOPY} -O binary $<TARGET_FILE:${EXECUTABLE}> ${EXECUTABLE}.bin)
+
