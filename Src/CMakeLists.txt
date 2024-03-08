@@ -52,13 +52,15 @@ set(SYS_HAL_SRCS   ${CMAKE_CURRENT_SOURCE_DIR}/SystemHal/stm32f1xx_hal_msp.c
 set(STARTUP_FILE   ${CMAKE_CURRENT_SOURCE_DIR}/StartupLinkerScript/startup_stm32f103xb.s)
 
 add_subdirectory(CMSIS_HAL)
+add_subdirectory(FreeRTOS)
 
 add_executable(${EXECUTABLE} main.cpp ${PERIPH_SRCS} ${SYS_HAL_SRCS} ${STARTUP_FILE})
 
 # Add libraries
 target_link_directories(${EXECUTABLE} PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/CMSIS_HAL/CMSIS/Lib/GCC
-                                              ${CMAKE_BINARY_DIR}/Src/CMSIS_HAL)
-target_link_libraries(${EXECUTABLE} PRIVATE -larm_cortexM3l_math CMSIS_HAL)
+                                              ${CMAKE_BINARY_DIR}/Src/CMSIS_HAL
+                                              ${CMAKE_BINARY_DIR}/Src/FreeRTOS)
+target_link_libraries(${EXECUTABLE} PRIVATE -larm_cortexM3l_math CMSIS_HAL FreeRTOS)
 
 # Include paths
 target_include_directories(${EXECUTABLE} PRIVATE ${INCLUDES})

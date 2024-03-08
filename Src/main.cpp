@@ -23,7 +23,8 @@
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
-
+#include "FreeRTOS.h"
+#include "task.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -50,7 +51,7 @@
 /* Private function prototypes -----------------------------------------------*/
 void SystemClock_Config(void);
 /* USER CODE BEGIN PFP */
-
+void LEDTask(void* Parameters_p);
 /* USER CODE END PFP */
 
 /* Private user code ---------------------------------------------------------*/
@@ -88,7 +89,11 @@ int main(void)
   MX_GPIO_Init();
   MX_USART2_UART_Init();
   /* USER CODE BEGIN 2 */
+  // Create tasks
+  xTaskCreate(LEDTask, "LEDTask", 100, NULL, 1, NULL);
 
+  // Start the scheduler
+  vTaskStartScheduler();
   /* USER CODE END 2 */
 
   /* Infinite loop */
@@ -98,8 +103,6 @@ int main(void)
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
-    HAL_Delay(200);
-    HAL_GPIO_TogglePin(GPIOA, GPIO_PIN_5);
   }
   /* USER CODE END 3 */
 }
@@ -143,6 +146,17 @@ void SystemClock_Config(void)
 }
 
 /* USER CODE BEGIN 4 */
+void LEDTask(void* Parameters_p)
+{
+    (void)Parameters_p;
+    for(;;)
+    {
+        vTaskDelay(2000 / portTICK_RATE_MS);
+        HAL_GPIO_TogglePin(GPIOA, GPIO_PIN_5);
+    }
+
+    vTaskDelete(NULL);
+}
 
 /* USER CODE END 4 */
 
