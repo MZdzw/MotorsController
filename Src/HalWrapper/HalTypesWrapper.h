@@ -4,7 +4,7 @@
 using GPIO_TypeDef = int;
 
 #define NUM_OF_GPIOS 5
-GPIO_TypeDef gpioAdresses[NUM_OF_GPIOS];
+extern GPIO_TypeDef gpioAdresses[NUM_OF_GPIOS];
 
 #define GPIOA ((GPIO_TypeDef*)(&gpioAdresses[0]))
 #define GPIOB ((GPIO_TypeDef*)(&gpioAdresses[1]))
