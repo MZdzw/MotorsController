@@ -3,7 +3,7 @@
 
 enum class ICDriver_e
 {
-    L293D
+    L293D, A4998, DRV8825
 };
 
 template <typename T>
@@ -16,6 +16,11 @@ protected:
 public:
     constexpr StpMotDriver(ICDriver_e icName, float angle)
     :m_IcName(icName), m_Angle(angle) {}
+
+    constexpr ICDriver_e GetICDriver() const
+    {
+        return m_IcName;
+    }
 
 };
 
