@@ -16,7 +16,7 @@ set(PROD_INCS    ${CMAKE_SOURCE_DIR}/Src/StepperMotorDriver
 set(PROD_SRCS    ${CMAKE_SOURCE_DIR}/Src/StepperMotorDriver/stepperMotorDriver.cpp)
 set(MOCK_INCS    ${CMAKE_CURRENT_SOURCE_DIR})
 
-add_executable(Tests ${TEST_SRCS} ${PROD_SRCS})
+add_executable(Tests ${PROD_SRCS} ${TEST_SRCS})
 
 target_compile_definitions(Tests PRIVATE TESTING=1)
 target_include_directories(Tests PRIVATE ${PROD_INCS} ${MOCK_INCS})

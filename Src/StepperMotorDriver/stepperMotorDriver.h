@@ -11,6 +11,8 @@
 #endif
 
 using AngleX10 = uint8_t;
+using PinNr = uint16_t;
+using PinOrder = std::array<std::pair<GPIO_TypeDef*, PinNr>, 4>;
 
 enum class ICDriver_e
 {
@@ -22,20 +24,7 @@ enum class StpMotDriverMode_e
     GPIO_TOGGLING, PWM
 };
 
-template <int N>
-struct Angles
-{
-    constexpr Angles() : values()
-    {
-        for (auto i = 0; i < N; ++i)
-        {
-            values[i] = (i + 1) * 0.9f;
-        }
-    }
-    float values[N];
-};
-
-constexpr bool CheckAngle(AngleX10 angle)
+constexpr AngleX10 CheckAngle(AngleX10 angle)
 {
     // Supported angles (x10) of stepper motors (drivers)
     constexpr std::array<AngleX10, 10> AnglesLookUpTable = 
@@ -45,10 +34,10 @@ constexpr bool CheckAngle(AngleX10 angle)
     {
         if (a == angle)
         {
-            return true;
+            return angle;
         }
     }
-    return false;
+    return 0;
 }
 
 template <typename T>
@@ -60,10 +49,13 @@ protected:
     StpMotDriverMode_e m_OperationMode;
     
 public:
+    StpMotDriver()
+    { }
+
     constexpr StpMotDriver(const ICDriver_e icName, const AngleX10 angle,
                            const StpMotDriverMode_e operationMode)
     :m_IcName(icName), m_Angle(angle), m_OperationMode(operationMode)
-    {}
+    { }
 
     constexpr ICDriver_e GetICDriver() const
     {
@@ -79,24 +71,50 @@ public:
     {
         return m_Angle;
     }
+
 };
 
-class StpMotDriver_L293D : public StpMotDriver<StpMotDriver_L293D>
+class StpMotDriver_CheckCompileTime : public StpMotDriver<StpMotDriver_CheckCompileTime>
 {
-
 public:
-    constexpr StpMotDriver_L293D(const AngleX10 angle)
-    : StpMotDriver(ICDriver_e::L293D, angle, StpMotDriverMode_e::GPIO_TOGGLING)
+    constexpr StpMotDriver_CheckCompileTime(const ICDriver_e icName, const AngleX10 angle,
+                                  const StpMotDriverMode_e opMode)
+    : StpMotDriver(icName, angle, opMode)
     {
-        THROW_COMPILE_TIME_EXCEPTION(GetICDriver() != ICDriver_e::L293D,
-                                     "[ERROR]: Wrong IC, should be L293D\n")
-        THROW_COMPILE_TIME_EXCEPTION(GetOperationMode() != StpMotDriverMode_e::GPIO_TOGGLING,
-                                     "[ERROR]: This driver operates on GPIOs\n")
-        THROW_COMPILE_TIME_EXCEPTION(!CheckAngle(GetAngle()),
-                                     "[ERROR]: Not supported angle value\n")
     }
 
 };
+
+template<AngleX10 angle>
+class StpMotDriver_L293D : public StpMotDriver<StpMotDriver_L293D<angle>>
+{
+private:
+    constexpr void CheckCompileTime();
+
+    PinOrder m_PinOrder;
+
+public:
+    StpMotDriver_L293D()
+    : StpMotDriver<StpMotDriver_L293D<angle>>(ICDriver_e::L293D, angle, StpMotDriverMode_e::GPIO_TOGGLING)
+    {
+        CheckCompileTime();
+    }
+
+    void SetPinOrder(const PinOrder& pinOrder);
+    PinOrder GetPinOrder();
+    
+};
+
+template<AngleX10 angle>
+constexpr void StpMotDriver_L293D<angle>::CheckCompileTime()
+{
+    constexpr StpMotDriver_CheckCompileTime obj(ICDriver_e::L293D, angle, StpMotDriverMode_e::GPIO_TOGGLING);
+    static_assert(obj.GetICDriver() == ICDriver_e::L293D,
+                  "[ERROR]: Wrong IC, should be L293D\n");
+    static_assert(CheckAngle(angle) == angle, "[ERROR]: Not supported angle value\n");
+    static_assert(obj.GetOperationMode() == StpMotDriverMode_e::GPIO_TOGGLING,
+                  "[ERROR]: This driver operates on GPIOs\n");
+}
 
 #endif
 

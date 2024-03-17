@@ -1,6 +1,7 @@
 #include <gtest/gtest.h>
 #include "stepperMotorDriver.h"
 #include "Mocks/HalWrapperMock.h"
+#include <iostream>
 
 GPIO_TypeDef gpioAdresses[NUM_OF_GPIOS];
 
@@ -10,8 +11,8 @@ GPIO_TypeDef gpioAdresses[NUM_OF_GPIOS];
 
 TEST(StepperDriver_L293D_Suite, CheckObjectCreation)
 {
-    constexpr StpMotDriver_L293D l293d_Driver(18);
-    EXPECT_TRUE(1);
+    StpMotDriver_L293D<18> l293d_Driver;
+    ASSERT_NE(&l293d_Driver, nullptr);
 }
 
 // TEST2:  Check different ICs (integrated circuits) name
@@ -19,16 +20,16 @@ TEST(StepperDriver_L293D_Suite, CheckObjectCreation)
 
 TEST(StepperDriver_L293D_Suite, CheckIfProperICIsSet)
 {
-    constexpr StpMotDriver_L293D l293d_Driver(18);
-    EXPECT_TRUE(l293d_Driver.GetICDriver() == ICDriver_e::L293D);
+    StpMotDriver_L293D<18> l293d_Driver;
+    ASSERT_EQ(l293d_Driver.GetICDriver(), ICDriver_e::L293D);
 }
 
 // TEST3:  Check if object with ICs generate proper 
 //         operation mode
 TEST(StepperDriver_L293D_Suite, CheckIfProperOperationMode)
 {
-    constexpr StpMotDriver_L293D l293d_Driver(18);
-    EXPECT_TRUE(l293d_Driver.GetOperationMode() == StpMotDriverMode_e::GPIO_TOGGLING);
+    StpMotDriver_L293D<18> l293d_Driver;
+    ASSERT_EQ(l293d_Driver.GetOperationMode(), StpMotDriverMode_e::GPIO_TOGGLING);
 }
 
 // TEST4:  Check if ICs have right pins assignment
@@ -42,12 +43,33 @@ TEST(StepperDriver_L293D_Suite, CheckIfConstructedwithProperAngleValue)
 {
     // Change Angle to not supported value. Compilation should not succeed
     const AngleX10 angle = 18;
-    constexpr StpMotDriver_L293D l293d_Driver(angle); 
-    EXPECT_TRUE(l293d_Driver.GetAngle() == angle);
+    StpMotDriver_L293D<angle> l293d_Driver; 
+    ASSERT_EQ(l293d_Driver.GetAngle(), angle);
 }
 
 // TEST6:  Check for GPIO_TOGGLING opeartion mode, that GPIOs
 //         are set in right order
+TEST(StepperDriver_L293D_Suite, CheckIfOrderOfPinsAssignedToDriver)
+{
+    // Where (Arrange)
+    // Change Angle to not supported value. Compilation should not succeed
+    // std::array<std::pair<GPIO_TypeDef*, PinNr>, 4> pinOrder = 
+    // {{{GPIOA, GPIO_PIN_6}, {GPIOA, GPIO_PIN_7},
+    //   {GPIOA, GPIO_PIN_8}, {GPIOA, GPIO_PIN_9}}};
+    StpMotDriver_L293D<18> obj;
+    PinOrder pinOrderTmp =  {{
+                        std::make_pair(GPIOA, GPIO_PIN_6),
+                        std::make_pair(GPIOA, GPIO_PIN_7),
+                        std::make_pair(GPIOA, GPIO_PIN_8),
+                        std::make_pair(GPIOA, GPIO_PIN_9)
+    }};
+
+    // When (Act)
+    obj.SetPinOrder(pinOrderTmp);
+
+    // Then (Assert)
+    EXPECT_TRUE(std::equal(pinOrderTmp.begin(), pinOrderTmp.end(), obj.GetPinOrder().begin()));
+}
 
 // TEST7:  Check for GPIO_TOGGLING opeartion mode,
 //         clockwise rotation
