@@ -22,7 +22,8 @@ target_compile_definitions(Tests PRIVATE TESTING=1)
 target_include_directories(Tests PRIVATE ${PROD_INCS} ${MOCK_INCS})
 
 target_link_libraries(Tests PRIVATE
-   GTest::gtest_main)
+                      gmock
+                      GTest::gtest_main)
 
 add_test(NAME tests COMMAND Tests)
 

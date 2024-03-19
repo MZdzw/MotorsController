@@ -21,6 +21,10 @@ public:
     {
         static_cast<const T*>(this)->GPIO_WritePin();
     }
+    void GPIO_TogglePin(GPIO_TypeDef* gpio, PinNr pinNr) const
+    {
+        static_cast<const T*>(this)->GPIO_TogglePin();
+    }
     
 };
 
@@ -29,7 +33,7 @@ class HalWrapper : public HalWrapperInterface<HalWrapper>
 public:
     void GPIO_WritePin(GPIO_TypeDef* gpio, PinNr pinNr) const;
     void GPIO_ResetPin(GPIO_TypeDef* gpio, PinNr pinNr) const;
-
+    void GPIO_TogglePin(GPIO_TypeDef* gpio, PinNr pinNr) const;
 };
 
 #endif

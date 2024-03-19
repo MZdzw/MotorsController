@@ -3,16 +3,17 @@
 #include <array>
 #include "HalWrapper.h"
 
-#ifdef TESTING
-#define THROW_COMPILE_TIME_EXCEPTION(condition, text) \
-    if (condition) { throw text; }
+#ifndef TESTING
+#define HAL_WRAPPER HalWrapper
 #else
-#define THROW_COMPILE_TIME_EXCEPTION(condition, text)
+#include "Mocks/HalWrapperMock.h"
+#define HAL_WRAPPER HalWrapperMock
 #endif
 
 using AngleX10 = uint8_t;
 using PinNr = uint16_t;
 using PinOrder = std::array<std::pair<GPIO_TypeDef*, PinNr>, 4>;
+using PhaseToChange = uint8_t;
 
 enum class ICDriver_e
 {
@@ -72,6 +73,16 @@ public:
         return m_Angle;
     }
 
+    void RotateMotorOneStep(std::pair<GPIO_TypeDef*, PinNr> pin)
+    {
+        static_cast<const T*>(this)->RotateMotorOneStep(pin);
+    }
+
+    void RotateMotorOneStepReverse(std::pair<GPIO_TypeDef*, PinNr> pin)
+    {
+        static_cast<const T*>(this)->RotateMotorOneStepReverse(pin);
+    }
+
 };
 
 class StpMotDriver_CheckCompileTime : public StpMotDriver<StpMotDriver_CheckCompileTime>
@@ -90,18 +101,27 @@ class StpMotDriver_L293D : public StpMotDriver<StpMotDriver_L293D<angle>>
 {
 private:
     constexpr void CheckCompileTime();
-
     PinOrder m_PinOrder;
+    PhaseToChange m_PhaseToChange;
+    // HAL_WRAPPER - wrapped in define because it depends if we are testing or not
+    // Use of CRTP requires strict usage of data types. While testing we want to use stub/mock
+    // In production code we want to have pure Hal_Wrapper data type - there is a conflict
+    // Use of #define is a workaround
+    HAL_WRAPPER& m_HalWrap;
 
 public:
-    StpMotDriver_L293D()
-    : StpMotDriver<StpMotDriver_L293D<angle>>(ICDriver_e::L293D, angle, StpMotDriverMode_e::GPIO_TOGGLING)
+    StpMotDriver_L293D(HAL_WRAPPER& halWrapper)
+    : StpMotDriver<StpMotDriver_L293D<angle>>(ICDriver_e::L293D, angle, StpMotDriverMode_e::GPIO_TOGGLING),
+      m_HalWrap(halWrapper), m_PhaseToChange(0)
     {
         CheckCompileTime();
     }
 
     void SetPinOrder(const PinOrder& pinOrder);
-    PinOrder GetPinOrder();
+    const PinOrder& GetPinOrder() const;
+
+    void RotateMotorOneStep();
+    void RotateMotorOneStepReverse();
     
 };
 
