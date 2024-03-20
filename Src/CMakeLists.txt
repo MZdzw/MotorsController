@@ -11,25 +11,20 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS ON)
 
 set(CORE_FLAGS "-mcpu=cortex-m3 -mthumb")
-set(CORE_FLAGS "${CORE_FLAGS} -g3")
-set(CXX_FLAGS "-std=gnu++17 -O0 -g -fno-rtti -fno-exceptions -fverbose-asm -MMD")
-set(C_FLAGS "-O3 -ffunction-sections -fdata-sections -fstack-usage -MMD -MP")
+set(CORE_FLAGS "${CORE_FLAGS}")
+set(CXX_FLAGS "-fno-rtti -fno-exceptions -fverbose-asm -MMD")
+set(C_FLAGS "-ffunction-sections -fdata-sections -fstack-usage -MMD -MP")
 set(ASM_FLAGS "-x assembler-with-cpp")
 set(CXX_WARNINGS "-Wall -Wextra")
 set(C_WARNINGS "-Wall -Wextra")
-# set(LD_FLAGS " --specs=nosys.specs \
-# -Wl,-Map=\"${PROJECT_BINARY_DIR}/${CMAKE_PROJECT_NAME}.map\" \
-# -Wl,--gc-sections -static \
-# -L\"${CMAKE_SOURCE_DIR}/Src/CMSIS_HAL/CMSIS/Lib/GCC\" \
-# -L\"${CMAKE_BINARY_DIR}/Src/CMSIS_HAL\" \
-# -larm_cortexM3l_math -lCMSIS_HAL \
-# --specs=nano.specs -Wl,--start-group -lc -lm -Wl,--end-group -Wl,--print-memory-usage")
 set(CMAKE_LINKER "/usr/bin/arm-none-eabi-g++")
 set(CMAKE_CXX_FLAGS "${CORE_FLAGS} ${CXX_FLAGS} ${CXX_WARNINGS}")
 set(CMAKE_C_FLAGS "${CORE_FLAGS} ${C_FLAGS} ${C_WARNINGS}")
 set(CMAKE_ASM_FLAGS "${ASM_FLAGS} ${CORE_FLAGS} ${CXX_WARNINGS}")
-# Be careful to link things in proper order
-# set(CMAKE_CXX_LINK_EXECUTABLE "<CMAKE_LINKER> <OBJECTS> -o <TARGET> ${CORE_FLAGS} ${LD_FLAGS}")
+set(CMAKE_CXX_FLAGS_DEBUG   "-g3 -O0")
+set(CMAKE_CXX_FLAGS_RELEASE "-g0 -O3")
+set(CMAKE_C_FLAGS_DEBUG   "-g3 -O0")
+set(CMAKE_C_FLAGS_RELEASE "-g0 -O3")
 set(CMAKE_EXE_LINKER_FLAGS  "${CMAKE_EXE_LINKER_FLAGS} --specs=nosys.specs -Wl,-Map=\
 \"${PROJECT_BINARY_DIR}/${CMAKE_PROJECT_NAME}.map\" -Wl,--gc-sections -static --specs=nano.specs \
 -Wl,--start-group -lc -lm -Wl,--end-group -Wl,--print-memory-usage")

@@ -1,9 +1,9 @@
 cmake_minimum_required(VERSION 3.22)
 
 set(CORE_FLAGS "-mcpu=cortex-m3 -mthumb -DUSE_HAL_DRIVER -DSTM32F103xB")
-set(CORE_FLAGS "${CORE_FLAGS} -g3")
-set(CXX_FLAGS "-std=gnu++17 -O0 -g -fno-rtti -fno-exceptions -fverbose-asm -MMD")
-set(C_FLAGS "-O3 -ffunction-sections -fdata-sections -fstack-usage -MMD -MP")
+set(CORE_FLAGS "${CORE_FLAGS}")
+set(CXX_FLAGS "-fno-rtti -fno-exceptions -fverbose-asm -MMD")
+set(C_FLAGS "-ffunction-sections -fdata-sections -fstack-usage -MMD -MP")
 set(CXX_WARNINGS "-Wall -Wextra")
 set(C_WARNINGS "-Wall -Wextra")
 set(CMAKE_CXX_FLAGS "${CORE_FLAGS} ${CXX_FLAGS} ${CXX_WARNINGS}")

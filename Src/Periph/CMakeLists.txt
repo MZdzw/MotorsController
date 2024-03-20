@@ -8,8 +8,8 @@ set(PERIPH_SRCS
 
 set(CORE_FLAGS "-mcpu=cortex-m3 -mthumb -DUSE_HAL_DRIVER -DSTM32F103xB")
 set(CORE_FLAGS "${CORE_FLAGS} -g3")
-set(CXX_FLAGS "-std=gnu++17 -O0 -g -fno-rtti -fno-exceptions -fverbose-asm -MMD")
-set(C_FLAGS "-O3 -ffunction-sections -fdata-sections -fstack-usage -MMD -MP")
+set(CXX_FLAGS "-fno-rtti -fno-exceptions -fverbose-asm -MMD")
+set(C_FLAGS "-ffunction-sections -fdata-sections -fstack-usage -MMD -MP")
 set(ASM_FLAGS "-x assembler-with-cpp")
 set(CXX_WARNINGS "-Wall -Wextra")
 set(C_WARNINGS "-Wall -Wextra")
