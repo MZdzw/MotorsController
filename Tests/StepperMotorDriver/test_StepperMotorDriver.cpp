@@ -256,9 +256,49 @@ TEST(StepperDriver_L293D_Suite, CheckAntiClockwiseRotation)
     EXPECT_EQ(*GPIOA & GPIO_PIN_9, 0);
 }
 
-// TEST11:  Check for GPIO_TOGGLING opeartion mode,
+// TEST11: Check for GPIO_TOGGLING opeartion mode,
 //         that pins in pair are not on in the same time
 
+
+// TEST12: Increment and decrement position for step movement
+//
+TEST(StepperDriver_L293D_Suite, CheckIncrementAndDecrementPosition)
+{
+    // Where (Arrange)
+    HalWrapperMock halWrapperMock;
+    StpMotDriver_L293D<18> l293d_Driver(halWrapperMock);
+    PinOrder pinOrderTmp =  {{
+                        std::make_pair(GPIOA, GPIO_PIN_6),
+                        std::make_pair(GPIOA, GPIO_PIN_7),
+                        std::make_pair(GPIOA, GPIO_PIN_8),
+                        std::make_pair(GPIOA, GPIO_PIN_9)
+    }};
+    MockCallsAfterPinSetup(halWrapperMock);
+    // Mock calls when step motor rotate
+    // Mock calls after first step
+    MockCallsFirstStep(halWrapperMock);
+
+    // When (Act)
+    // GetPosition, should be zero after initialization
+    EXPECT_EQ(l293d_Driver.GetAnglePosition(), 0);
+
+    l293d_Driver.SetPinOrder(pinOrderTmp);
+    l293d_Driver.RotateMotorOneStep();
+    // Then (Assert)
+    EXPECT_EQ(*GPIOA & GPIO_PIN_6, 0);
+    EXPECT_EQ(*GPIOA & GPIO_PIN_7, GPIO_PIN_7);
+    EXPECT_EQ(*GPIOA & GPIO_PIN_8, GPIO_PIN_8);
+    EXPECT_EQ(*GPIOA & GPIO_PIN_9, 0);
+
+    // Check Position - done one step above, so the position should be angle - 18
+    EXPECT_EQ(l293d_Driver.GetAnglePosition(), 18);
+
+    // Now rotate in reverse
+    // Third step reverse will get to the begining state (see above table)
+    MockCallsThirdStepReverse(halWrapperMock);
+    l293d_Driver.RotateMotorOneStepReverse();
+    EXPECT_EQ(l293d_Driver.GetAnglePosition(), 0);
+}
 
 // ####################### Mock calls wrapped in functions ########################
 

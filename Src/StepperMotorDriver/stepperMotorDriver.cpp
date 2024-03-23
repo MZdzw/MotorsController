@@ -25,6 +25,7 @@ void StpMotDriver_L293D<angle>::RotateMotorOneStep()
     m_HalWrap.GPIO_TogglePin(m_PinOrder.at(index + 1).first,
                              m_PinOrder.at(index + 1).second);
     m_PhaseToChange ^= 0x01;
+    static_cast<StpMotDriver_L293D<angle>*>(this)->IncrementPosition();
 }
 
 template<AngleX10 angle>
@@ -36,6 +37,7 @@ void StpMotDriver_L293D<angle>::RotateMotorOneStepReverse()
                              m_PinOrder.at(index).second);
     m_HalWrap.GPIO_TogglePin(m_PinOrder.at(index + 1).first,
                              m_PinOrder.at(index + 1).second);
+    static_cast<StpMotDriver_L293D<angle>*>(this)->DecrementPosition();
 }
 
 // Explicit instantiation of template class for specific values of angle

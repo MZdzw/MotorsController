@@ -25,6 +25,9 @@
 /* USER CODE BEGIN Includes */
 #include "FreeRTOS.h"
 #include "task.h"
+
+#include "stepperMotorDriver.h"
+#include "HalWrapper.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -52,6 +55,7 @@
 void SystemClock_Config(void);
 /* USER CODE BEGIN PFP */
 void LEDTask(void* Parameters_p);
+void StpMotTask(void* Parameters_p);
 /* USER CODE END PFP */
 
 /* Private user code ---------------------------------------------------------*/
@@ -91,6 +95,7 @@ int main(void)
   /* USER CODE BEGIN 2 */
   // Create tasks
   xTaskCreate(LEDTask, "LEDTask", 100, NULL, 1, NULL);
+  xTaskCreate(StpMotTask, "StpMotTask", 100, NULL, 2, NULL);
 
   // Start the scheduler
   vTaskStartScheduler();
@@ -153,6 +158,28 @@ void LEDTask(void* Parameters_p)
     {
         vTaskDelay(2000 / portTICK_RATE_MS);
         HAL_GPIO_TogglePin(GPIOA, GPIO_PIN_5);
+    }
+
+    vTaskDelete(NULL);
+}
+
+void StpMotTask(void* Parameters_p)
+{
+    (void)Parameters_p;
+    HalWrapper halWrapper;
+    StpMotDriver_L293D<18> l293d_Driver(halWrapper);
+    PinOrder pinOrderTmp =  {{
+                        std::make_pair(GPIOA, GPIO_PIN_6),
+                        std::make_pair(GPIOA, GPIO_PIN_7),
+                        std::make_pair(GPIOA, GPIO_PIN_8),
+                        std::make_pair(GPIOA, GPIO_PIN_9)
+    }};
+    l293d_Driver.SetPinOrder(pinOrderTmp);
+
+    for(;;)
+    {
+        vTaskDelay(2000 / portTICK_RATE_MS);
+        l293d_Driver.RotateMotorOneStep();
     }
 
     vTaskDelete(NULL);

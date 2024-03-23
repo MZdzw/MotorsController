@@ -46,8 +46,9 @@ class StpMotDriver
 {
 protected:
     ICDriver_e m_IcName;
-    float m_Angle;
+    AngleX10 m_Angle;
     StpMotDriverMode_e m_OperationMode;
+    AngleX10 m_AnglePosition;
     
 public:
     StpMotDriver()
@@ -55,7 +56,8 @@ public:
 
     constexpr StpMotDriver(const ICDriver_e icName, const AngleX10 angle,
                            const StpMotDriverMode_e operationMode)
-    :m_IcName(icName), m_Angle(angle), m_OperationMode(operationMode)
+    : m_IcName(icName), m_Angle(angle), m_OperationMode(operationMode), 
+      m_AnglePosition(0)
     { }
 
     constexpr ICDriver_e GetICDriver() const
@@ -81,6 +83,21 @@ public:
     void RotateMotorOneStepReverse(std::pair<GPIO_TypeDef*, PinNr> pin)
     {
         static_cast<const T*>(this)->RotateMotorOneStepReverse(pin);
+    }
+
+    void IncrementPosition()
+    {
+        m_AnglePosition += m_Angle;
+    }
+
+    void DecrementPosition()
+    {
+        m_AnglePosition -= m_Angle;
+    }
+
+    AngleX10 GetAnglePosition() const
+    {
+        return m_AnglePosition;
     }
 
 };
