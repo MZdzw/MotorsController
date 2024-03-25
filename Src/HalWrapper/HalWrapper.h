@@ -13,17 +13,17 @@ template <typename T>
 class HalWrapperInterface
 {
 public:
-    void GPIO_WritePin(GPIO_TypeDef* gpio, PinNr pinNr) const
+    void GPIO_WritePin(GPIO_TypeDef* gpio, PinNr pinNr)
     {
-        static_cast<const T*>(this)->GPIO_WritePin();
+        static_cast<T&>(*this).GPIO_WritePin(gpio, pinNr);
     }
-    void GPIO_ResetPin(GPIO_TypeDef* gpio, PinNr pinNr) const
+    void GPIO_ResetPin(GPIO_TypeDef* gpio, PinNr pinNr)
     {
-        static_cast<const T*>(this)->GPIO_WritePin();
+        static_cast<T&>(*this).GPIO_ResetPin(gpio, pinNr);
     }
-    void GPIO_TogglePin(GPIO_TypeDef* gpio, PinNr pinNr) const
+    void GPIO_TogglePin(GPIO_TypeDef* gpio, PinNr pinNr)
     {
-        static_cast<const T*>(this)->GPIO_TogglePin();
+        static_cast<T&>(*this).GPIO_TogglePin(gpio, pinNr);
     }
     
 };
@@ -31,9 +31,9 @@ public:
 class HalWrapper : public HalWrapperInterface<HalWrapper>
 {
 public:
-    void GPIO_WritePin(GPIO_TypeDef* gpio, PinNr pinNr) const;
-    void GPIO_ResetPin(GPIO_TypeDef* gpio, PinNr pinNr) const;
-    void GPIO_TogglePin(GPIO_TypeDef* gpio, PinNr pinNr) const;
+    void GPIO_WritePin(GPIO_TypeDef* gpio, PinNr pinNr);
+    void GPIO_ResetPin(GPIO_TypeDef* gpio, PinNr pinNr);
+    void GPIO_TogglePin(GPIO_TypeDef* gpio, PinNr pinNr);
 };
 
 #endif

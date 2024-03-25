@@ -1,6 +1,7 @@
 #ifndef __STEPPERMOTORDRIVER_H__
 #define __STEPPERMOTORDRIVER_H__
 #include <array>
+#include <stdint.h>
 #include "HalWrapper.h"
 
 #ifndef TESTING
@@ -44,7 +45,7 @@ constexpr AngleX10 CheckAngle(AngleX10 angle)
 template <typename T>
 class StpMotDriver
 {
-protected:
+private:
     ICDriver_e m_IcName;
     AngleX10 m_Angle;
     StpMotDriverMode_e m_OperationMode;
@@ -60,45 +61,19 @@ public:
       m_AnglePosition(0)
     { }
 
-    constexpr ICDriver_e GetICDriver() const
-    {
-        return m_IcName;
-    }
+    // Common method for each derived classes
+    constexpr ICDriver_e GetICDriver() const;
+    constexpr StpMotDriverMode_e GetOperationMode() const;
+    constexpr AngleX10 GetAngle() const;
+    void IncrementPosition();
+    void DecrementPosition();
+    AngleX10 GetAnglePosition() const;
 
-    constexpr StpMotDriverMode_e GetOperationMode() const
-    {
-        return m_OperationMode;
-    }
-
-    constexpr AngleX10 GetAngle() const
-    {
-        return m_Angle;
-    }
-
-    void RotateMotorOneStep(std::pair<GPIO_TypeDef*, PinNr> pin)
-    {
-        static_cast<const T*>(this)->RotateMotorOneStep(pin);
-    }
-
-    void RotateMotorOneStepReverse(std::pair<GPIO_TypeDef*, PinNr> pin)
-    {
-        static_cast<const T*>(this)->RotateMotorOneStepReverse(pin);
-    }
-
-    void IncrementPosition()
-    {
-        m_AnglePosition += m_Angle;
-    }
-
-    void DecrementPosition()
-    {
-        m_AnglePosition -= m_Angle;
-    }
-
-    AngleX10 GetAnglePosition() const
-    {
-        return m_AnglePosition;
-    }
+    // Interface methods, must be overwritten by derived classes
+    void SetPinOrder(PinOrder& pinOrder);
+    const PinOrder& GetPinOrder() const;
+    void RotateMotorOneStep();
+    void RotateMotorOneStepReverse();
 
 };
 
@@ -117,33 +92,90 @@ template<AngleX10 angle>
 class StpMotDriver_L293D : public StpMotDriver<StpMotDriver_L293D<angle>>
 {
 private:
-    constexpr void CheckCompileTime();
+    constexpr void m_CheckCompileTime();
     PinOrder m_PinOrder;
     PhaseToChange m_PhaseToChange;
-    // HAL_WRAPPER - wrapped in define because it depends if we are testing or not
-    // Use of CRTP requires strict usage of data types. While testing we want to use stub/mock
-    // In production code we want to have pure Hal_Wrapper data type - there is a conflict
-    // Use of #define is a workaround
-    HAL_WRAPPER& m_HalWrap;
+    HalWrapperInterface<HAL_WRAPPER>& m_HalWrapper;
 
 public:
     StpMotDriver_L293D(HAL_WRAPPER& halWrapper)
     : StpMotDriver<StpMotDriver_L293D<angle>>(ICDriver_e::L293D, angle, StpMotDriverMode_e::GPIO_TOGGLING),
-      m_HalWrap(halWrapper), m_PhaseToChange(0)
+      m_PhaseToChange(0), m_HalWrapper(halWrapper)
     {
-        CheckCompileTime();
+        m_CheckCompileTime();
     }
 
-    void SetPinOrder(const PinOrder& pinOrder);
+    void SetPinOrder(PinOrder& pinOrder);
     const PinOrder& GetPinOrder() const;
-
     void RotateMotorOneStep();
     void RotateMotorOneStepReverse();
     
 };
 
+// CRTP interface methods implementation
+
+template <typename T>
+constexpr ICDriver_e StpMotDriver<T>::GetICDriver() const
+{
+    return m_IcName;
+}
+
+template <typename T>
+constexpr StpMotDriverMode_e StpMotDriver<T>::GetOperationMode() const
+{
+    return m_OperationMode;
+}
+
+template <typename T>
+constexpr AngleX10 StpMotDriver<T>::GetAngle() const
+{
+    return m_Angle;
+}
+
+template <typename T>
+void StpMotDriver<T>::IncrementPosition()
+{
+    m_AnglePosition += m_Angle;
+}
+
+template <typename T>
+void StpMotDriver<T>::DecrementPosition()
+{
+    m_AnglePosition -= m_Angle;
+}
+
+template <typename T>
+AngleX10 StpMotDriver<T>::GetAnglePosition() const
+{
+    return m_AnglePosition;
+}
+
+template <typename T>
+void StpMotDriver<T>::SetPinOrder(PinOrder& pinOrder)
+{
+    static_cast<T&>(*this).SetPinOrder(pinOrder);
+}
+
+template <typename T>
+const PinOrder& StpMotDriver<T>::GetPinOrder() const
+{
+    return static_cast<const T&>(*this).GetPinOrder();
+}
+
+template <typename T>
+void StpMotDriver<T>::RotateMotorOneStep()
+{
+    static_cast<T&>(*this).RotateMotorOneStep();
+}
+
+template <typename T>
+void StpMotDriver<T>::RotateMotorOneStepReverse()
+{
+    static_cast<T&>(*this).RotateMotorOneStepReverse();
+}
+
 template<AngleX10 angle>
-constexpr void StpMotDriver_L293D<angle>::CheckCompileTime()
+constexpr void StpMotDriver_L293D<angle>::m_CheckCompileTime()
 {
     constexpr StpMotDriver_CheckCompileTime obj(ICDriver_e::L293D, angle, StpMotDriverMode_e::GPIO_TOGGLING);
     static_assert(obj.GetICDriver() == ICDriver_e::L293D,

@@ -40,7 +40,8 @@ set(SYMBOLS
 set(INCLUDES       ${CMAKE_CURRENT_SOURCE_DIR}/Periph
                    ${CMAKE_CURRENT_SOURCE_DIR}/SystemHal
                    ${CMAKE_CURRENT_SOURCE_DIR}/StepperMotorDriver
-                   ${CMAKE_CURRENT_SOURCE_DIR}/HalWrapper)
+                   ${CMAKE_CURRENT_SOURCE_DIR}/HalWrapper
+                   ${CMAKE_CURRENT_SOURCE_DIR}/MovementElement)
 set(PERIPH_SRCS    ${CMAKE_CURRENT_SOURCE_DIR}/Periph/gpio.c
                    ${CMAKE_CURRENT_SOURCE_DIR}/Periph/usart.c)
 set(SYS_HAL_SRCS   ${CMAKE_CURRENT_SOURCE_DIR}/SystemHal/stm32f1xx_hal_msp.c
@@ -49,12 +50,13 @@ set(SYS_HAL_SRCS   ${CMAKE_CURRENT_SOURCE_DIR}/SystemHal/stm32f1xx_hal_msp.c
 set(STARTUP_FILE   ${CMAKE_CURRENT_SOURCE_DIR}/StartupLinkerScript/startup_stm32f103xb.s)
 set(STPMOT_SRCS    ${CMAKE_CURRENT_SOURCE_DIR}/StepperMotorDriver/stepperMotorDriver.cpp)
 set(HAL_WRPS       ${CMAKE_CURRENT_SOURCE_DIR}/HalWrapper/HalWrapper.cpp)
+set(MOVELEM_SRCS   ${CMAKE_CURRENT_SOURCE_DIR}/MovementElement/MovementElement.cpp)
 
 add_subdirectory(CMSIS_HAL)
 add_subdirectory(FreeRTOS)
 
 add_executable(${EXECUTABLE} main.cpp ${PERIPH_SRCS} ${SYS_HAL_SRCS} ${STARTUP_FILE}
-                                      ${STPMOT_SRCS} ${HAL_WRPS})
+               ${STPMOT_SRCS} ${HAL_WRPS} ${MOVELEM_SRCS})
 
 # Add libraries
 target_link_directories(${EXECUTABLE} PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/CMSIS_HAL/CMSIS/Lib/GCC

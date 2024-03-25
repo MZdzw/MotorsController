@@ -69,7 +69,7 @@ TEST(StepperDriver_L293D_Suite, CheckIfOrderOfPinsAssignedToDriver)
     // {{{GPIOA, GPIO_PIN_6}, {GPIOA, GPIO_PIN_7},
     //   {GPIOA, GPIO_PIN_8}, {GPIOA, GPIO_PIN_9}}};
     HalWrapperMock halWrapperMock;
-    ::testing::NiceMock<HalWrapperMock> naggyMock;
+    // ::testing::NiceMock<HalWrapperMock> naggyMock;
     StpMotDriver_L293D<18> l293d_Driver(halWrapperMock);
     PinOrder pinOrderTmp =  {{
                         std::make_pair(GPIOA, GPIO_PIN_6),

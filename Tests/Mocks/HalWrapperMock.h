@@ -3,6 +3,15 @@
 #include "HalWrapper.h"
 #include "gmock/gmock.h"
 
+
+struct HalWrapperDummy : public HalWrapperInterface<HalWrapperDummy>
+{
+    HalWrapperDummy() : HalWrapperInterface() { }
+    void GPIO_WritePin(GPIO_TypeDef* gpio, PinNr pinNr) { }
+    void GPIO_ResetPin(GPIO_TypeDef* gpio, PinNr pinNr) { }
+    void GPIO_TogglePin(GPIO_TypeDef* gpio, PinNr pinNr) { }
+};
+
 struct HalWrapperMock : public HalWrapperInterface<HalWrapperMock>
 {
     HalWrapperMock() : HalWrapperInterface() { }
