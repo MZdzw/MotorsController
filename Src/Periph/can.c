@@ -55,6 +55,19 @@ void MX_CAN_Init(void)
   }
   /* USER CODE BEGIN CAN_Init 2 */
 
+  CAN_FilterTypeDef canFilterConfig;
+  canFilterConfig.FilterActivation = CAN_FILTER_ENABLE;
+  canFilterConfig.FilterBank = 10;
+  canFilterConfig.FilterFIFOAssignment = CAN_FILTER_FIFO1;
+  canFilterConfig.FilterIdHigh = 0x101 << 5;
+  canFilterConfig.FilterIdLow = 0;
+  canFilterConfig.FilterMaskIdHigh = 0x101 << 5;
+  canFilterConfig.FilterMaskIdLow = 0;
+  canFilterConfig.FilterMode = CAN_FILTERMODE_IDMASK;
+  canFilterConfig.FilterScale = CAN_FILTERSCALE_32BIT;
+  canFilterConfig.SlaveStartFilterBank = 0;
+
+  HAL_CAN_ConfigFilter(&hcan, &canFilterConfig);
   /* USER CODE END CAN_Init 2 */
 
 }

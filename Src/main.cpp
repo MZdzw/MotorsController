@@ -26,6 +26,8 @@
 /* USER CODE BEGIN Includes */
 #include "FreeRTOS.h"
 #include "task.h"
+#include "queue.h"
+#include "semphr.h"
 
 #include "stepperMotorDriver.h"
 
@@ -57,16 +59,38 @@
 TaskHandle_t MovementElementTaskHanle_sh;
 PositionMmX100 setPosition_sh = 0;
 
+SemaphoreHandle_t xCanBusSemaphore = NULL;
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
 void SystemClock_Config(void);
-void TmpTask(void* Parameters_p);
+void CanBusTask(void* Parameters_p);
 /* USER CODE BEGIN PFP */
 /* USER CODE END PFP */
 
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
+CAN_TxHeaderTypeDef TxHeader;
+CAN_RxHeaderTypeDef RxHeader;
+
+uint8_t TxData[8];
+uint8_t RxData[8];
+
+uint32_t TxMailbox;
+
+volatile int datacheck = 0;
+
+void HAL_CAN_RxFifo1MsgPendingCallback(CAN_HandleTypeDef *hcan)
+{
+    BaseType_t xHigherPriorityTaskWoken = pdFALSE;
+    HAL_CAN_GetRxMessage(hcan, CAN_RX_FIFO1, &RxHeader, RxData);
+    if (RxHeader.DLC == 2)
+    {
+        xSemaphoreGiveFromISR(xCanBusSemaphore, &xHigherPriorityTaskWoken);
+        portYIELD_FROM_ISR(xHigherPriorityTaskWoken);
+    }
+}
+
 
 /* USER CODE END 0 */
 
@@ -101,10 +125,23 @@ int main(void)
   MX_USART2_UART_Init();
   MX_CAN_Init();
   /* USER CODE BEGIN 2 */
+  HAL_CAN_Start(&hcan);
+
+  HAL_CAN_ActivateNotification(&hcan, CAN_IT_RX_FIFO1_MSG_PENDING);
+
+  TxHeader.DLC = 2;         // Data length
+  TxHeader.IDE = CAN_ID_STD;
+  TxHeader.RTR = CAN_RTR_DATA;
+  TxHeader.StdId = 0x103;
+
+  TxData[0] = 50;
+  TxData[1] = 20;
   // Create tasks
+  xCanBusSemaphore = xSemaphoreCreateBinary();
+  if(xCanBusSemaphore == NULL) while(1);
   xTaskCreate(LEDTask, "LEDTask", 100, NULL, 1, NULL);
   xTaskCreate(MovementElementTask, "MovementElementTask", 100, NULL, 2, &MovementElementTaskHanle_sh);
-  xTaskCreate(TmpTask, "TmpTask", 100, NULL, 1, NULL);
+  xTaskCreate(CanBusTask, "CanBusTask", 100, NULL, 1, NULL);
 
   // Start the scheduler
   vTaskStartScheduler();
@@ -160,21 +197,19 @@ void SystemClock_Config(void)
 }
 
 /* USER CODE BEGIN 4 */
-void TmpTask(void* Parameters_p)
+void CanBusTask(void* Parameters_p)
 {
     (void)Parameters_p;
-    // This task is only for temporary purposes
-    // It will trigger Stepper motor position process
-    // It will be replaced for expample by communication task
-    // which, when the msg arrive will trigger StepperMotor
 
     for (;;)
     {
-        setPosition_sh = ((setPosition_sh == 0) ? 20000 : 0);
-        xTaskNotifyGive(MovementElementTaskHanle_sh);
-        vTaskDelay(20000 / portTICK_RATE_MS);
+        if (xSemaphoreTake(xCanBusSemaphore, 1000 / portTICK_RATE_MS) == pdTRUE)
+        {
+            setPosition_sh = ((setPosition_sh == 0) ? 20000 : 0);
+            setPosition_sh = ((RxData[1] << 8) | RxData[0]);
+            xTaskNotifyGive(MovementElementTaskHanle_sh);
+        }
     }
-
     vTaskDelete(NULL);
 }
 
