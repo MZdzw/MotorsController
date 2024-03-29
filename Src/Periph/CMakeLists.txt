@@ -4,7 +4,8 @@ set(PERIPH_INC ${CMAKE_CURRENT_SOURCE_DIR}/..)
 
 set(PERIPH_SRCS
         ${CMAKE_CURRENT_SOURCE_DIR}/gpio.c
-        ${CMAKE_CURRENT_SOURCE_DIR}/usart.c)
+        ${CMAKE_CURRENT_SOURCE_DIR}/usart.c
+        ${CMAKE_CURRENT_SOURCE_DIR}/can.c)
 
 set(CORE_FLAGS "-mcpu=cortex-m3 -mthumb -DUSE_HAL_DRIVER -DSTM32F103xB")
 set(CORE_FLAGS "${CORE_FLAGS} -g3")

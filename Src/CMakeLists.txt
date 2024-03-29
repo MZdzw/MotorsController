@@ -44,7 +44,8 @@ set(INCLUDES       ${CMAKE_CURRENT_SOURCE_DIR}/Periph
                    ${CMAKE_CURRENT_SOURCE_DIR}/MovementElement
                    ${CMAKE_CURRENT_SOURCE_DIR}/Tasks)
 set(PERIPH_SRCS    ${CMAKE_CURRENT_SOURCE_DIR}/Periph/gpio.c
-                   ${CMAKE_CURRENT_SOURCE_DIR}/Periph/usart.c)
+                   ${CMAKE_CURRENT_SOURCE_DIR}/Periph/usart.c
+                   ${CMAKE_CURRENT_SOURCE_DIR}/Periph/can.c)
 set(SYS_HAL_SRCS   ${CMAKE_CURRENT_SOURCE_DIR}/SystemHal/stm32f1xx_hal_msp.c
                    ${CMAKE_CURRENT_SOURCE_DIR}/SystemHal/stm32f1xx_it.c
                    ${CMAKE_CURRENT_SOURCE_DIR}/SystemHal/system_stm32f1xx.c)
