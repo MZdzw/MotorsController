@@ -27,7 +27,11 @@
 #include "task.h"
 
 #include "stepperMotorDriver.h"
-#include "HalWrapper.h"
+
+// Include Task Files
+#include "TaskInterfaces.h"
+#include "BlinkingLEDTask.h"
+#include "MovementElementTask.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -48,14 +52,16 @@
 /* Private variables ---------------------------------------------------------*/
 
 /* USER CODE BEGIN PV */
+// Task Interfaces variables
+TaskHandle_t MovementElementTaskHanle_sh;
+PositionMmX100 setPosition_sh = 0;
 
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
 void SystemClock_Config(void);
+void TmpTask(void* Parameters_p);
 /* USER CODE BEGIN PFP */
-void LEDTask(void* Parameters_p);
-void StpMotTask(void* Parameters_p);
 /* USER CODE END PFP */
 
 /* Private user code ---------------------------------------------------------*/
@@ -95,7 +101,8 @@ int main(void)
   /* USER CODE BEGIN 2 */
   // Create tasks
   xTaskCreate(LEDTask, "LEDTask", 100, NULL, 1, NULL);
-  xTaskCreate(StpMotTask, "StpMotTask", 100, NULL, 2, NULL);
+  xTaskCreate(MovementElementTask, "MovementElementTask", 100, NULL, 2, &MovementElementTaskHanle_sh);
+  xTaskCreate(TmpTask, "TmpTask", 100, NULL, 1, NULL);
 
   // Start the scheduler
   vTaskStartScheduler();
@@ -151,35 +158,19 @@ void SystemClock_Config(void)
 }
 
 /* USER CODE BEGIN 4 */
-void LEDTask(void* Parameters_p)
+void TmpTask(void* Parameters_p)
 {
     (void)Parameters_p;
-    for(;;)
+    // This task is only for temporary purposes
+    // It will trigger Stepper motor position process
+    // It will be replaced for expample by communication task
+    // which, when the msg arrive will trigger StepperMotor
+
+    for (;;)
     {
-        vTaskDelay(2000 / portTICK_RATE_MS);
-        HAL_GPIO_TogglePin(GPIOA, GPIO_PIN_5);
-    }
-
-    vTaskDelete(NULL);
-}
-
-void StpMotTask(void* Parameters_p)
-{
-    (void)Parameters_p;
-    HalWrapper halWrapper;
-    StpMotDriver_L293D<18> l293d_Driver(halWrapper);
-    PinOrder pinOrderTmp =  {{
-                        std::make_pair(GPIOA, GPIO_PIN_6),
-                        std::make_pair(GPIOA, GPIO_PIN_7),
-                        std::make_pair(GPIOA, GPIO_PIN_8),
-                        std::make_pair(GPIOA, GPIO_PIN_9)
-    }};
-    l293d_Driver.SetPinOrder(pinOrderTmp);
-
-    for(;;)
-    {
-        vTaskDelay(2000 / portTICK_RATE_MS);
-        l293d_Driver.RotateMotorOneStep();
+        setPosition_sh = ((setPosition_sh == 0) ? 20000 : 0);
+        xTaskNotifyGive(MovementElementTaskHanle_sh);
+        vTaskDelay(20000 / portTICK_RATE_MS);
     }
 
     vTaskDelete(NULL);
