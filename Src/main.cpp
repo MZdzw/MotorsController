@@ -125,17 +125,6 @@ int main(void)
   MX_USART2_UART_Init();
   MX_CAN_Init();
   /* USER CODE BEGIN 2 */
-  HAL_CAN_Start(&hcan);
-
-  HAL_CAN_ActivateNotification(&hcan, CAN_IT_RX_FIFO1_MSG_PENDING);
-
-  TxHeader.DLC = 2;         // Data length
-  TxHeader.IDE = CAN_ID_STD;
-  TxHeader.RTR = CAN_RTR_DATA;
-  TxHeader.StdId = 0x103;
-
-  TxData[0] = 50;
-  TxData[1] = 20;
   // Create tasks
   xCanBusSemaphore = xSemaphoreCreateBinary();
   if(xCanBusSemaphore == NULL) while(1);
@@ -200,6 +189,19 @@ void SystemClock_Config(void)
 void CanBusTask(void* Parameters_p)
 {
     (void)Parameters_p;
+    // vTaskDelay(5000 / portTICK_RATE_MS);
+
+    HAL_CAN_Start(&hcan);
+
+    HAL_CAN_ActivateNotification(&hcan, CAN_IT_RX_FIFO1_MSG_PENDING);
+
+    TxHeader.DLC = 2;         // Data length
+    TxHeader.IDE = CAN_ID_STD;
+    TxHeader.RTR = CAN_RTR_DATA;
+    TxHeader.StdId = 0x103;
+
+    TxData[0] = 50;
+    TxData[1] = 20;
 
     for (;;)
     {

@@ -33,6 +33,7 @@
 /* Scheduler includes. */
 #include "FreeRTOS.h"
 #include "task.h"
+#include "stm32f1xx_hal.h"
 
 /* For backward compatibility, ensure configKERNEL_INTERRUPT_PRIORITY is
  * defined.  The value should also ensure backward compatibility.
@@ -450,6 +451,7 @@ void xPortSysTickHandler( void )
             portNVIC_INT_CTRL_REG = portNVIC_PENDSVSET_BIT;
         }
     }
+    HAL_IncTick();
     portENABLE_INTERRUPTS();
 }
 /*-----------------------------------------------------------*/

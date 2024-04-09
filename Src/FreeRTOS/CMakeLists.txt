@@ -11,7 +11,11 @@ set(CMAKE_C_FLAGS "${CORE_FLAGS} ${C_FLAGS} ${C_WARNINGS}")
 
 set(FREERTOS_INC
     ${CMAKE_CURRENT_SOURCE_DIR}/Source/portable/GCC/ARM_CM3/
-    ${CMAKE_CURRENT_SOURCE_DIR}/Source/include/)
+    ${CMAKE_CURRENT_SOURCE_DIR}/Source/include/
+    ${CMAKE_SOURCE_DIR}/Src/CMSIS_HAL/STM32F1xx_HAL_Driver/Inc/
+    ${CMAKE_SOURCE_DIR}/Src/SystemHal/
+    ${CMAKE_SOURCE_DIR}/Src/CMSIS_HAL/CMSIS/Device/ST/STM32F1xx/Include/
+    ${CMAKE_SOURCE_DIR}/Src/CMSIS_HAL/CMSIS/Include/)
 
 set(FREERTOS_SRCS
     ${CMAKE_CURRENT_SOURCE_DIR}/Source/croutine.c
