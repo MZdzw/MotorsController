@@ -28,6 +28,7 @@ void MovementElementTask(void* Parameters_p)
         if (notificationValue > 0)
         {
             movElemAxisZ.SetPositionMmX100(setPosition_sh);
+            isPositionReached_sh = false;
             while (!movElemAxisZ.IsPositionReached())
             {
                 if (movElemAxisZ.GetPositionMmX100() < 
@@ -41,7 +42,10 @@ void MovementElementTask(void* Parameters_p)
                 }
                 vTaskDelay(5 / portTICK_RATE_MS);  // keep the velocity const by now
                 movElemAxisZ.SetPositionMmX100(setPosition_sh);
+
+                currentPosition_sh = movElemAxisZ.GetActualPositionMmX100();
             }
+            isPositionReached_sh = true;
         }
     }
 

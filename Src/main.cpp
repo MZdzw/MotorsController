@@ -57,14 +57,20 @@
 /* USER CODE BEGIN PV */
 // Task Interfaces variables
 TaskHandle_t MovementElementTaskHanle_sh;
+TaskHandle_t CanBusSendTaskHandle_sh;
 PositionMmX100 setPosition_sh = 0;
+PositionMmX100 currentPosition_sh = 0;
+bool isPositionReached_sh = false;
+
+
 
 SemaphoreHandle_t xCanBusSemaphore = NULL;
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
 void SystemClock_Config(void);
-void CanBusTask(void* Parameters_p);
+void CanBusReceiveTask(void* Parameters_p);
+void CanBusSendTask(void* Parameters_p);
 /* USER CODE BEGIN PFP */
 /* USER CODE END PFP */
 
@@ -130,7 +136,8 @@ int main(void)
   if(xCanBusSemaphore == NULL) while(1);
   xTaskCreate(LEDTask, "LEDTask", 100, NULL, 1, NULL);
   xTaskCreate(MovementElementTask, "MovementElementTask", 100, NULL, 2, &MovementElementTaskHanle_sh);
-  xTaskCreate(CanBusTask, "CanBusTask", 100, NULL, 1, NULL);
+  xTaskCreate(CanBusReceiveTask, "CanBusReceiveTask", 100, NULL, 1, NULL);
+  xTaskCreate(CanBusSendTask, "CanBusSendTask", 100, NULL, 1, &CanBusSendTaskHandle_sh);
 
   // Start the scheduler
   vTaskStartScheduler();
@@ -186,7 +193,7 @@ void SystemClock_Config(void)
 }
 
 /* USER CODE BEGIN 4 */
-void CanBusTask(void* Parameters_p)
+void CanBusReceiveTask(void* Parameters_p)
 {
     (void)Parameters_p;
     // vTaskDelay(5000 / portTICK_RATE_MS);
@@ -194,6 +201,24 @@ void CanBusTask(void* Parameters_p)
     HAL_CAN_Start(&hcan);
 
     HAL_CAN_ActivateNotification(&hcan, CAN_IT_RX_FIFO1_MSG_PENDING);
+
+
+    for (;;)
+    {
+        if (xSemaphoreTake(xCanBusSemaphore, 1000 / portTICK_RATE_MS) == pdTRUE)
+        {
+            setPosition_sh = ((setPosition_sh == 0) ? 20000 : 0);
+            setPosition_sh = ((RxData[1] << 8) | RxData[0]);
+            xTaskNotifyGive(MovementElementTaskHanle_sh);
+            xTaskNotifyGive(CanBusSendTaskHandle_sh);
+        }
+    }
+    vTaskDelete(NULL);
+}
+
+void CanBusSendTask(void* Parameters_p)
+{
+    (void)Parameters_p;
 
     TxHeader.DLC = 2;         // Data length
     TxHeader.IDE = CAN_ID_STD;
@@ -203,16 +228,23 @@ void CanBusTask(void* Parameters_p)
     TxData[0] = 50;
     TxData[1] = 20;
 
-    for (;;)
+    int notificationValue;
+    for(;;)
     {
-        if (xSemaphoreTake(xCanBusSemaphore, 1000 / portTICK_RATE_MS) == pdTRUE)
+        notificationValue = ulTaskNotifyTake(pdTRUE, (TickType_t) portMAX_DELAY);
+        if (notificationValue > 0)
         {
-            setPosition_sh = ((setPosition_sh == 0) ? 20000 : 0);
-            setPosition_sh = ((RxData[1] << 8) | RxData[0]);
-            xTaskNotifyGive(MovementElementTaskHanle_sh);
+            while (!isPositionReached_sh)
+            {
+                vTaskDelay(100);
+                TxData[1] = (currentPosition_sh & 0xFF00) >> 8;
+                TxData[0] = currentPosition_sh & 0xFF;
+                HAL_CAN_AddTxMessage(&hcan, &TxHeader, TxData, &TxMailbox);
+            }
         }
     }
     vTaskDelete(NULL);
+
 }
 
 /* USER CODE END 4 */

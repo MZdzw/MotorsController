@@ -13,8 +13,11 @@
 // These variables should have common prefix (_sh - shared)
 
 extern TaskHandle_t MovementElementTaskHanle_sh;
+extern TaskHandle_t CanBusSendTaskHandle_sh;
 
 extern PositionMmX100 setPosition_sh;
+extern PositionMmX100 currentPosition_sh;
+extern bool isPositionReached_sh;
 
 
 #endif

@@ -43,7 +43,7 @@ template<ThreadPitchMm pitch>
 bool MovementElement_AxisZ<pitch>::IsPositionReached()
 {
     // @TODO - check that division by 2 is optimized by compiler
-    if (std::abs(m_ActualPositionMmX100 - m_PositionMmX100) < (m_LinToRotRatio / 2))
+    if (std::abs(m_ActualPositionMmX100 - m_PositionMmX100) <= (m_LinToRotRatio / 2))
         return true;
     return false;
 }
