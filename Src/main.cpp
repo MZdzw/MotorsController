@@ -29,7 +29,7 @@
 #include "queue.h"
 #include "semphr.h"
 
-#include "stepperMotorDriver.h"
+#include "StepperMotorDriver.h"
 
 // Include Task Files
 #include "TaskInterfaces.h"

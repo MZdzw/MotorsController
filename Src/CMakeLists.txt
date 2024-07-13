@@ -50,7 +50,7 @@ set(SYS_HAL_SRCS   ${CMAKE_CURRENT_SOURCE_DIR}/SystemHal/stm32f1xx_hal_msp.c
                    ${CMAKE_CURRENT_SOURCE_DIR}/SystemHal/stm32f1xx_it.c
                    ${CMAKE_CURRENT_SOURCE_DIR}/SystemHal/system_stm32f1xx.c)
 set(STARTUP_FILE   ${CMAKE_CURRENT_SOURCE_DIR}/StartupLinkerScript/startup_stm32f103xb.s)
-set(STPMOT_SRCS    ${CMAKE_CURRENT_SOURCE_DIR}/StepperMotorDriver/stepperMotorDriver.cpp)
+set(STPMOT_SRCS    ${CMAKE_CURRENT_SOURCE_DIR}/StepperMotorDriver/StepperMotorDriver.cpp)
 set(HAL_WRPS       ${CMAKE_CURRENT_SOURCE_DIR}/HalWrapper/HalWrapper.cpp)
 set(MOVELEM_SRCS   ${CMAKE_CURRENT_SOURCE_DIR}/MovementElement/MovementElement.cpp)
 set(FREERTOS_TASKS ${CMAKE_CURRENT_SOURCE_DIR}/Tasks/BlinkingLEDTask.cpp

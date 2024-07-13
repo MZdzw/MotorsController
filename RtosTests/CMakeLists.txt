@@ -36,6 +36,5 @@ target_link_directories(Test_MovementElementTask PRIVATE ${CMAKE_BINARY_DIR}/Src
 target_link_libraries(Test_MovementElementTask PRIVATE
                       GTest::gmock
                       GTest::gtest_main
-                      FreeRTOS
-                      winmm.lib)
+                      FreeRTOS)
 

@@ -1,15 +1,19 @@
 cmake_minimum_required(VERSION 3.22)
 
-if(NOT BUILD_TEST_FREERTOS)
-set(CORE_FLAGS "-mcpu=cortex-m3 -mthumb -DUSE_HAL_DRIVER -DSTM32F103xB")
-set(CORE_FLAGS "${CORE_FLAGS}")
-set(CXX_FLAGS "-fno-rtti -fno-exceptions -fverbose-asm -MMD")
-set(C_FLAGS "-ffunction-sections -fdata-sections -fstack-usage -MMD -MP")
-
-set(PORTABLE_PLATFORM GCC/ARM_CM3)
-else()
-set(PORTABLE_PLATFORM MSVC-MingW)
-endif()
+if (NOT BUILD_TEST_FREERTOS)
+    set(CORE_FLAGS "-mcpu=cortex-m3 -mthumb -DUSE_HAL_DRIVER -DSTM32F103xB")
+    set(CORE_FLAGS "${CORE_FLAGS}")
+    set(CXX_FLAGS "-fno-rtti -fno-exceptions -fverbose-asm -MMD")
+    set(C_FLAGS "-ffunction-sections -fdata-sections -fstack-usage -MMD -MP")
+    
+    set(PORTABLE_PLATFORM GCC/ARM_CM3)
+else ()
+    if (WIN32)
+        set(PORTABLE_PLATFORM MSVC-MingW)
+    else ()
+        set(PORTABLE_PLATFORM GCC/Posix)
+    endif ()
+endif ()
 set(CXX_WARNINGS "-Wall -Wextra")
 set(C_WARNINGS "-Wall -Wextra")
 set(CMAKE_CXX_FLAGS "${CORE_FLAGS} ${CXX_FLAGS} ${CXX_WARNINGS}")
@@ -34,6 +38,13 @@ set(FREERTOS_SRCS
 
     ${CMAKE_CURRENT_SOURCE_DIR}/Source/portable/${PORTABLE_PLATFORM}/port.c
     ${CMAKE_CURRENT_SOURCE_DIR}/Source/portable/MemMang/heap_4.c)
+
+if (UNIX)
+    set(FREERTOS_INC ${FREERTOS_INC}
+          ${CMAKE_CURRENT_SOURCE_DIR}/Source/portable/${PORTABLE_PLATFORM}/utils)
+    set(FREERTOS_SRCS ${FREERTOS_SRCS}
+          ${CMAKE_CURRENT_SOURCE_DIR}/Source/portable/${PORTABLE_PLATFORM}/utils/wait_for_event.c)
+endif (UNIX)
 
 add_library(FreeRTOS STATIC ${FREERTOS_SRCS})
 

@@ -1,10 +1,11 @@
 import os
 import re
+import platform
 
 NumOfLoopsUserList = [
     {
         'fileName': "BlinkingLEDTask.cpp",
-        'LoopCnt': '10'
+        'LoopCnt': '20'
     },
     {
         'fileName': "MovementElementTask.cpp",
@@ -72,7 +73,15 @@ def GenerateFiles(filesContent, outPath):
 
 def main():
     # List of Task functions (containing begining and ending of)
-    directory = r"C:\Users\Marcin\Desktop\Projects\MotorsController\Src\Tasks"
+    directory = os.path.dirname(__file__)
+    outPath = os.path.dirname(__file__)
+    if (platform.system() == 'Linux'):
+        directory += r"/../../Src/Tasks"
+        outPath += r"/../gen/gen"
+        print(directory)
+    else:
+        directory = r"\..\..\Src\Tasks"
+        outPath += r"\..\gen/gen"
     taskFilesContent = []
     for root, _, files in os.walk(directory):
         for file in files:
@@ -82,7 +91,7 @@ def main():
 
     ParseForTesting(taskFilesContent)
 
-    outPath = r"C:\Users\Marcin\Desktop\Projects\MotorsController\RtosTests\gen\gen"
+    print(outPath)
     GenerateFiles(taskFilesContent, outPath)
                 
     print(taskFilesContent)

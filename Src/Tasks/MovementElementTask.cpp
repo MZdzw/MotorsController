@@ -1,7 +1,7 @@
 #include "FreeRTOS.h"
 #include "task.h"
 #include "MovementElementTask.h"
-#include "stepperMotorDriver.h"
+#include "StepperMotorDriver.h"
 #include "HalWrapper.h"
 #include "TaskInterfaces.h"
 
