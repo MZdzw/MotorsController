@@ -1,16 +1,22 @@
 cmake_minimum_required(VERSION 3.22)
 
+if(NOT BUILD_TEST_FREERTOS)
 set(CORE_FLAGS "-mcpu=cortex-m3 -mthumb -DUSE_HAL_DRIVER -DSTM32F103xB")
 set(CORE_FLAGS "${CORE_FLAGS}")
 set(CXX_FLAGS "-fno-rtti -fno-exceptions -fverbose-asm -MMD")
 set(C_FLAGS "-ffunction-sections -fdata-sections -fstack-usage -MMD -MP")
+
+set(PORTABLE_PLATFORM GCC/ARM_CM3)
+else()
+set(PORTABLE_PLATFORM MSVC-MingW)
+endif()
 set(CXX_WARNINGS "-Wall -Wextra")
 set(C_WARNINGS "-Wall -Wextra")
 set(CMAKE_CXX_FLAGS "${CORE_FLAGS} ${CXX_FLAGS} ${CXX_WARNINGS}")
 set(CMAKE_C_FLAGS "${CORE_FLAGS} ${C_FLAGS} ${C_WARNINGS}")
 
 set(FREERTOS_INC
-    ${CMAKE_CURRENT_SOURCE_DIR}/Source/portable/GCC/ARM_CM3/
+    ${CMAKE_CURRENT_SOURCE_DIR}/Source/portable/${PORTABLE_PLATFORM}/
     ${CMAKE_CURRENT_SOURCE_DIR}/Source/include/
     ${CMAKE_SOURCE_DIR}/Src/CMSIS_HAL/STM32F1xx_HAL_Driver/Inc/
     ${CMAKE_SOURCE_DIR}/Src/SystemHal/
@@ -26,7 +32,7 @@ set(FREERTOS_SRCS
     ${CMAKE_CURRENT_SOURCE_DIR}/Source/tasks.c
     ${CMAKE_CURRENT_SOURCE_DIR}/Source/timers.c
 
-    ${CMAKE_CURRENT_SOURCE_DIR}/Source/portable/GCC/ARM_CM3/port.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/Source/portable/${PORTABLE_PLATFORM}/port.c
     ${CMAKE_CURRENT_SOURCE_DIR}/Source/portable/MemMang/heap_4.c)
 
 add_library(FreeRTOS STATIC ${FREERTOS_SRCS})

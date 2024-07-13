@@ -25,7 +25,5 @@ target_compile_definitions(Test_MovementElement PRIVATE TESTING=1)
 target_include_directories(Test_MovementElement PRIVATE ${PROD_INCS} ${MOCK_INCS})
 
 target_link_libraries(Test_MovementElement PRIVATE
-                      gmock
+                      GTest::gmock
                       GTest::gtest_main)
-
-add_test(NAME tests COMMAND Test_MovementElement)

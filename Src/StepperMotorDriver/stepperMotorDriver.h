@@ -5,10 +5,14 @@
 #include "HalWrapper.h"
 
 #ifndef TESTING
-#define HAL_WRAPPER HalWrapper
+    #define HAL_WRAPPER HalWrapper
 #else
-#include "Mocks/HalWrapperMock.h"
-#define HAL_WRAPPER HalWrapperMock
+    #include "Mocks/HalWrapperMock.h"
+    #ifndef TESTING_FREERTOS
+        #define HAL_WRAPPER HalWrapperMock
+    #else
+        #define HAL_WRAPPER HalWrapperDummy
+    #endif
 #endif
 
 using AngleX10 = uint8_t;

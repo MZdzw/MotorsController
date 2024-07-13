@@ -7,10 +7,14 @@
 #define STEPPERMOTTOR_STEPANGLEX10 18
 
 #ifndef TESTING
-#define STPMOTDRIVER_L293D StpMotDriver_L293D
+    #define STPMOTDRIVER_L293D StpMotDriver_L293D
 #else
-#include "Mocks/StepperMotor_L293DMock.h"
-#define STPMOTDRIVER_L293D StpMotDriver_L293DMock
+    #ifndef TESTING_FREERTOS
+        #include "Mocks/StepperMotor_L293DMock.h"
+        #define STPMOTDRIVER_L293D StpMotDriver_L293DMock
+    #else
+        #define STPMOTDRIVER_L293D StpMotDriver_L293D
+    #endif
 #endif
 
 using PositionMmX100 = int32_t;

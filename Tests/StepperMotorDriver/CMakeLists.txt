@@ -24,8 +24,5 @@ target_compile_definitions(Test_StepperMotorDriver PRIVATE TESTING=1)
 target_include_directories(Test_StepperMotorDriver PRIVATE ${PROD_INCS} ${MOCK_INCS})
 
 target_link_libraries(Test_StepperMotorDriver PRIVATE
-                      gmock
+                      GTest::gmock
                       GTest::gtest_main)
-
-add_test(NAME tests COMMAND Test_StepperMotorDriver)
-
